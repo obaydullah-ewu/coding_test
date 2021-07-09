@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Products</h1>
     </div>
@@ -15,10 +16,22 @@
                 </div>
                 <div class="col-md-2">
                     <select name="variant" id="" class="form-control" >
-                        <option >Select variant</option>
-                        @foreach($product_variants as $product_variant)
-                            <option value="{{ $product_variant['id'] }}">{{ $product_variant['variant'] }}</option>
+                        <optgroup label="Color">
+                            @php $c= 0; @endphp
+                        @foreach ($variants_group as $key => $variants)
+                            <option value="{{ $key }}}">{{ $key }}</option>
+                            @if($c == 2)
+                                    </optgroup>
+                                    <optgroup label="Size">
+                            @endif
+                            @php $c++; @endphp
+
                         @endforeach
+                            </optgroup>
+{{--                        @foreach($variants_group as $variants)--}}
+{{--                            @dd($variants->name)--}}
+{{--                            <option value="{{ $variants }}">{{ $variants }}</option>--}}
+{{--                        @endforeach--}}
                     </select>
                 </div>
 

@@ -20,6 +20,10 @@ class ProductController extends Controller
 
         $data['product_variants'] = ProductVariant::all();
         $data['product_variant_prices'] = ProductVariantPrice::all();
+//        $data['variants_group'] = ProductVariant::groupBy('variant')->get();
+        $data['variants_group']=  ProductVariant::orderBy('id')->get()->groupBy(function($data) {
+            return $data->variant;
+        });
 
         if ($request['title'] !== null && $request['variant'] && $request['price_from'] && $request['price_to'] && $request['date']) {
             $data['products'] = Product::query()
@@ -27,7 +31,7 @@ class ProductController extends Controller
                 ->whereIn('id',function ($query) use ($request) {
                     $query->select('product_id')
                         ->from('product_variants')
-                        ->where('id', $request['variant']);
+                        ->where('variant', $request['variant']);
                 })
                 ->whereIn('id',function ($query) use ($request) {
                     $query->select('product_id')
@@ -46,7 +50,7 @@ class ProductController extends Controller
                 ->where('title', 'LIKE', "%{$request['title']}%")
                 ->paginate(5);
         } else {
-            $data['products'] = Product::latest()->paginate(5);
+            $data['products'] = Product::paginate(5);
         }
 
         return view('products.index')->with($data);
