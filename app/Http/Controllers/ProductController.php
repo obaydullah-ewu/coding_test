@@ -15,9 +15,41 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Http\Response|\Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('products.index');
+
+        $data['product_variants'] = ProductVariant::all();
+        $data['product_variant_prices'] = ProductVariantPrice::all();
+
+        if ($request['title'] !== null && $request['variant'] && $request['price_from'] && $request['price_to'] && $request['date']) {
+            $data['products'] = Product::query()
+                ->where('title', 'LIKE', "%{$request['title']}%")
+                ->whereIn('id',function ($query) use ($request) {
+                    $query->select('product_id')
+                        ->from('product_variants')
+                        ->where('id', $request['variant']);
+                })
+                ->whereIn('id',function ($query) use ($request) {
+                    $query->select('product_id')
+                        ->from('product_variant_prices')
+                        ->whereBetween('price', [$request['price_from'], $request['price_to']]);
+                })
+                ->whereDate('created_at', 'LIKE', "%{$request['date']}%")
+                ->paginate(5);
+        } elseif ($request['title'] && $request['date']) {
+            $data['products'] = Product::query()
+                ->where('title', 'LIKE', "%{$request['title']}%")
+                ->whereDate('created_at', $request['date'])
+                ->paginate(5);
+        } elseif ($request['title']){
+            $data['products'] = Product::query()
+                ->where('title', 'LIKE', "%{$request['title']}%")
+                ->paginate(5);
+        } else {
+            $data['products'] = Product::latest()->paginate(5);
+        }
+
+        return view('products.index')->with($data);
     }
 
     /**
